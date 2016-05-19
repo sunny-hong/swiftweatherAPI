@@ -1,0 +1,71 @@
+//
+//  ViewController.swift
+//  
+//
+
+import UIKit
+
+class ViewController: UIViewController {
+    
+    @IBOutlet weak var cityNameTextField: UITextField!
+    @IBOutlet weak var cityNameLabel: UILabel!
+    @IBOutlet weak var cityTempLabel: UILabel!
+    @IBAction func getDataButtonClicked(sender: UIButton) {
+        getWeatherData("http://api.openweathermap.org/data/2.5/weather?q=\(cityNameTextField.text)" + "us&APPID=7000194b7d56642203d23a1fd518664c")
+    }
+    
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        getWeatherData("http://api.openweathermap.org/data/2.5/weather?q=London,uk"+"us&APPID=7000194b7d56642203d23a1fd518664c")
+        // Do any additional setup after loading the view, typically from a nib.
+    }
+    
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        // Dispose of any resources that can be recreated.
+    }
+
+    func getWeatherData(urlString: String) {
+        let url = NSURL(string: urlString)
+        let session = NSURLSession.sharedSession()
+        let task = session.dataTaskWithURL(url!) { (data, response, error) in dispatch_async(dispatch_get_main_queue(), {self.setLabels(data)
+        })
+        }
+    
+        task.resume()
+    }
+    
+    func setLabels(weatherData: NSData) {
+  
+        
+        
+        do {
+            let json = try NSJSONSerialization.JSONObjectWithData(weatherData, options:NSJSONReadingOptions.MutableContainers) as! NSDictionary
+            print(json)
+            
+            //cityNameLabel.text = json[("name")] as? String
+            if let name = json[("name")] as? String {
+                cityNameLabel.text = name
+            }
+            
+            if let main = json[("main")] as? NSDictionary {
+                if let temp = main[("temp")] as? Double {
+                    //convert kelvin to farenhiet
+                    let ft = (temp * 9/5 - 459.67)
+                    
+                    let myString = ft.description
+                    
+                    cityTempLabel.text = myString
+                    
+                }
+            }
+            
+            
+        } catch let error as NSError {
+            print(error)
+        }
+     
+    }
+    
+}
